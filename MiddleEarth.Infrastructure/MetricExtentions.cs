@@ -26,9 +26,13 @@ namespace MiddleEarth.Infrastructure
                             && !req.Request.Path.ToUriComponent().Contains("swagger", StringComparison.OrdinalIgnoreCase);
                     })
                     .AddHttpClientInstrumentation()
-                    .AddOtlpExporter(otlpOptions =>
+                    //.AddOtlpExporter(otlpOptions =>
+                    //{
+                    //    otlpOptions.Endpoint = new Uri(configuration.GetValue<string>("AppSettings:OtelEndpoint"));
+                    //}
+                    .AddJaegerExporter(o =>
                     {
-                        otlpOptions.Endpoint = new Uri(configuration.GetValue<string>("AppSettings:OtelEndpoint"));
+                        o.AgentHost = "jaeger";
                     })
                 );
 
