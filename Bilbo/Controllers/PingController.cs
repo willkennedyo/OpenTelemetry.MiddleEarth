@@ -9,7 +9,7 @@ namespace Gandalf.Controllers
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PingController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        public PingController(IHttpContextAccessor httpContextAccessor, MiddleEarth.Infrastructure.ILogger logger) : base(httpContextAccessor, logger)
         {
         }
 
@@ -21,6 +21,8 @@ namespace Gandalf.Controllers
             activity.AddEvent(new ActivityEvent("Ping", tags: new ActivityTagsCollection(new[] { KeyValuePair.Create<string, object?>("Ping", DateTime.Now) })));
             activity.SetTag("otel.status_code", "OK");
             activity.SetTag("otel.status_description", "Ping successfully");
+
+            _logger.Information($"Ping RequestId = {Activity.Current?.TraceId.ToString() ?? string.Empty}");
 
             return "OK";
         }

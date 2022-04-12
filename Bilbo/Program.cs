@@ -4,11 +4,15 @@ using MiddleEarth.Infrastructure;
 using Gandalf.Configuration;
 using System.Diagnostics;
 using MiddleEarth.Infrastructure.Filters;
+using Serilog;
 
 const string SourceName = "Bilbo";
 const string MeterName = "ComputerVision";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSerilogApi(builder.Configuration, SourceName);
+builder.Host.UseSerilog();
 
 builder.Services
     .AddServices(builder.Configuration)

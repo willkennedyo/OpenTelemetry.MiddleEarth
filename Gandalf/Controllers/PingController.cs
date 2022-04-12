@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using System.Diagnostics;
 
 namespace Gandalf.Controllers
@@ -7,9 +8,7 @@ namespace Gandalf.Controllers
     public class PingController : GandalfBaseController
     {
 
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public PingController(IHttpContextAccessor httpContextAccessor) : base(httpContextAccessor)
+        public PingController(IHttpContextAccessor httpContextAccessor, MiddleEarth.Infrastructure.ILogger logger) : base(httpContextAccessor, logger)
         {
         }
 
@@ -22,6 +21,7 @@ namespace Gandalf.Controllers
             activity.SetTag("otel.status_code", "OK");
             activity.SetTag("otel.status_description", "Ping successfully");
 
+            _logger.Information($"Ping RequestId = {Activity.Current?.TraceId.ToString() ?? string.Empty}");
             return "OK";
         }
 
@@ -63,6 +63,8 @@ namespace Gandalf.Controllers
                 activity.SetTag("Words", "You Must Trust Yourself. Trust Your Own Strength.");
                 activity.SetTag("otel.status_code", "OK");
                 activity.SetTag("otel.status_description", "Ping Bilbo successfully");
+
+            _logger.Information($"Ping RequestId = {Activity.Current?.TraceId.ToString() ?? string.Empty}");
 
             return Ok($"Bilbo, we have a journey to do.\n{Figgle.FiggleFonts.Doom.Render(result)}");
         }

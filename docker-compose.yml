@@ -50,7 +50,25 @@ services:
     networks:
       vpcbr:
         ipv4_address: 10.5.0.6
-        
+
+  loki:
+    image: grafana/loki:master
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.18
+
+  grafana:
+    image: grafana/grafana:master
+    ports:
+      - "3000:3000"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.17
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
 
   prometheus:
     container_name: prometheus
@@ -79,6 +97,8 @@ services:
     depends_on:
       - zipkin
       - prometheus
+      - loki
+      - grafana
     networks:
       vpcbr:
         ipv4_address: 10.5.0.12

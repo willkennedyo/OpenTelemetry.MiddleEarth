@@ -10,11 +10,14 @@ namespace Gandalf.Controllers
         protected readonly ActivitySource _source;
 
         protected readonly IHttpContextAccessor _httpContextAccessor;
+        protected readonly MiddleEarth.Infrastructure.ILogger _logger;
 
-        public GandalfBaseController(IHttpContextAccessor httpContextAccessor)
+        public GandalfBaseController(IHttpContextAccessor httpContextAccessor, MiddleEarth.Infrastructure.ILogger logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _source = new ActivitySource(_sourceName);
+            _logger = logger;
+            _logger.SetTraceContext(httpContextAccessor);
         }
     }
 }
