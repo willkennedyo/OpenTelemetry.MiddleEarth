@@ -1,0 +1,91 @@
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
+
+
+services:
+  bilbo:
+    container_name: bilbo
+    image: bilbo
+    build:
+      context: .
+      dockerfile: Bilbo/Dockerfile
+    dns:
+      - 8.8.8.8
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.8
+    depends_on:
+      - db
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: bilbo.db
+    hostname: bilbo.db
+    volumes:
+      - sqlserverdata:/var/lib/sqlserver
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.9
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.10
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.11
+
+  otel:
+    image: otel/opentelemetry-collector-contrib
+    container_name: otel
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./config/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888:1888"   # pprof extension
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317"        # OTLP gRPC receiver
+      - "55670:55679" # zpages extension
+    depends_on:
+      - zipkin
+      - prometheus
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.12
+
+  gandalf:
+    container_name: gandalf
+    image: gandalf
+    build:
+      context: .
+      dockerfile: Gandalf/Dockerfile
+    dns:
+      - 8.8.8.8
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.13
+    depends_on:
+      - bilbo
+
+volumes:
+  sqlserverdata:
+    driver: local

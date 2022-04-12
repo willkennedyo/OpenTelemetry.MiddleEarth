@@ -1,0 +1,39 @@
+services:
+  bilbo:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8001;http://+:8000
+      - ConnectionStrings__SqlConnection=Server=bilbo.db;Database=bilbo_db;User Id=sa;Password=Taggia42!
+      - ConnectionStrings__AzureStorageConnection=${STORAGEACCOUNTCONNECTION}
+      - AppSettings__ContainerName=attachments
+      - AppSettings__CognitiveServicesKey=${COGNITIVESERVICESKEY}
+      - AppSettings__CognitiveServicesEndpoint=${COGNITIVESERVICESENDPOINT}
+      - AppSettings__OtelEndpoint=http://otel:4317
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  db:
+    ports:
+      - "6999:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Taggia42!"
+
+  gandalf:    
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:44428;http://+:8090
+      - ConnectionStrings__SqlConnection=Server=bilbo.db;Database=bilbo_db;User Id=sa;Password=Taggia42!
+      - ConnectionStrings__AzureStorageConnection=${STORAGEACCOUNTCONNECTION}
+      - AppSettings__ContainerName=attachments
+      - AppSettings__CognitiveServicesKey=${COGNITIVESERVICESKEY}
+      - AppSettings__CognitiveServicesEndpoint=${COGNITIVESERVICESENDPOINT}
+      - AppSettings__OtelEndpoint=http://otel:4317
+    ports:
+      - "8090:8090"
+      - "44428:44428"
+    volumes:
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
