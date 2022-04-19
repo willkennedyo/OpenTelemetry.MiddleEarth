@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MiddleEarth.Infrastructure.DataAccessLayer;
 using MiddleEarth.Infrastructure;
-using Gandalf.Configuration;
+using Bilbo.Configuration;
 using System.Diagnostics;
 using MiddleEarth.Infrastructure.Filters;
 using Serilog;

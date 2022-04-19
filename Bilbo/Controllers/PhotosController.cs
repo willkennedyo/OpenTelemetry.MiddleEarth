@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using MiddleEarth.Infrastructure.Extentions;
 
-namespace Gandalf.Controllers
+namespace Bilbo.Controllers
 {
     [ApiController]
     [Route("[controller]")]

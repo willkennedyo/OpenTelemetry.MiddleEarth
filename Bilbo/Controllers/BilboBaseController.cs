@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Gandalf.Controllers
+namespace Bilbo.Controllers
 {
     public class BilboBaseController : ControllerBase
     {

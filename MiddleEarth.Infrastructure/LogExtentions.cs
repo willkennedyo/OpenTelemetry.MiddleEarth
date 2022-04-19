@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Serilog;
 using Serilog.Context;
 using Serilog.Events;
@@ -40,18 +41,6 @@ namespace MiddleEarth.Infrastructure
 
             services.Add(new ServiceDescriptor(typeof(ILogger), new SerilogLogger(logger, logEvent)));
 
-            //var logEvent = new LogEvent(Guid.NewGuid(), Guid.NewGuid());
-
-            //services.Add(new ServiceDescriptor(typeof(ILogger), new SerilogLogger(logger, logEvent)));
-
-            //services.AddSingleton(Log.Logger);
-            var exception = new Exception("TEST Ex");
-            logger.Error("error test", exception);
-
-            var position = new { Latitude = 25, Longitude = 134 };
-            var elapsedMs = 34;
-            logger.Information("Message processed {@Position} in {Elapsed:000} ms.", position, elapsedMs);
-
             return services;
 
         }
@@ -63,7 +52,7 @@ namespace MiddleEarth.Infrastructure
 
         private readonly LogEvent _logEvent;
 
-        private const string _messageTemplate = "{TraceId:l}, {ParentSpanId:l}, {SpanId:l}, {RequestId:l}";
+        private const string _messageTemplate = "{TraceId:l}, {ParentSpanId:l}, {SpanId:l}, {RequestId:l},{Message:l},{Params:l}";
 
         public SerilogLogger(Serilog.ILogger logger, LogEvent logEvent, IHttpContextAccessor httpContextAccessor = null)
         {
@@ -93,7 +82,7 @@ namespace MiddleEarth.Infrastructure
         #region Debug
 
         public void DebugWithMessageTemplate(string messageTemplate, params object[] extraParams)
-            => _logger.Debug(messageTemplate, extraParams);
+            => _logger.Debug(messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
 
         /// <summary>
         /// Write a log in debug level
@@ -105,7 +94,7 @@ namespace MiddleEarth.Infrastructure
         {
             if (callerName != null)
                 message = $"{callerName}:{message}";
-            _logger.Debug(_messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, extraParams);
+            _logger.Debug(_messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, new { Params = JsonConvert.SerializeObject(extraParams) });
         }
 
         #endregion
@@ -113,7 +102,7 @@ namespace MiddleEarth.Infrastructure
         #region Information
 
         public void InformationWithMessageTemplate(string messageTemplate, params object[] extraParams)
-            => _logger.Information(messageTemplate, extraParams);
+            => _logger.Information(messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
 
         /// <summary>
         /// Write a log in information level
@@ -133,7 +122,7 @@ namespace MiddleEarth.Infrastructure
         #region Warning
 
         public void WarningWithMessageTemplate(string messageTemplate, Exception exception = null, params object[] extraParams)
-            => _logger.Warning(exception, messageTemplate, extraParams);
+            => _logger.Warning(exception, messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
 
         /// <summary>
         /// Write a log in warning level
@@ -155,7 +144,7 @@ namespace MiddleEarth.Infrastructure
         {
             if (callerName != null)
                 message = $"{callerName}:{message}";
-            _logger.Warning(exception, _messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, extraParams);
+            _logger.Warning(exception, _messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId, message, extraParams);
         }
 
         #endregion
@@ -163,7 +152,7 @@ namespace MiddleEarth.Infrastructure
         #region Error
 
         public void ErrorWithMessageTemplate(string messageTemplate, Exception exception = null, params object[] extraParams)
-            => _logger.Error(exception, messageTemplate, extraParams);
+            => _logger.Error(exception, messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
 
         /// <summary>
         /// Write a log in error level
@@ -185,7 +174,7 @@ namespace MiddleEarth.Infrastructure
         {
             if (callerName != null)
                 message = $"{callerName}:{message}";
-            _logger.Error(exception, _messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, extraParams);
+            _logger.Error(exception, _messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, new { Params = JsonConvert.SerializeObject(extraParams) });
         }
 
         public void Write(Serilog.Events.LogEvent logEvent)
@@ -215,20 +204,14 @@ namespace MiddleEarth.Infrastructure
             if (httpContextAccessor == null)
                 return;
 
-            SetTraceId(httpContextAccessor);
             SetSpanId();
             SetParentSpanId(httpContextAccessor);
             SetRequestId();
         }
 
-        public void SetTraceId(IHttpContextAccessor httpContextAccessor)
-        {
-            string result = httpContextAccessor.HttpContext.Request.Headers["X-B3-TraceId"].ToString();
-            TraceId = !string.IsNullOrEmpty(result) ? result : Guid.NewGuid().ToString("N");
-        }
         public void SetRequestId()
         {
-            RequestId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
+            TraceId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
         }
 
         public void SetSpanId()
@@ -238,7 +221,7 @@ namespace MiddleEarth.Infrastructure
 
         public void SetParentSpanId(IHttpContextAccessor httpContextAccessor)
         {
-            ParentSpanId = httpContextAccessor.HttpContext.Request.Headers["X-B3-ParentSpanId"].ToString();
+            ParentSpanId = httpContextAccessor.HttpContext.Request.Headers["ParentSpanId"].ToString();
         }
 
     }

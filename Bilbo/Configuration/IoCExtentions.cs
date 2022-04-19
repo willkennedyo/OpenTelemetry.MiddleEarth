@@ -1,7 +1,7 @@
 ﻿using MiddleEarth.Infrastructure.DataAccessLayer;
 using MiddleEarth.Infrastructure.Services;
 
-namespace Gandalf.Configuration
+namespace Bilbo.Configuration
 {
     public static class IoCExtentions
     {
