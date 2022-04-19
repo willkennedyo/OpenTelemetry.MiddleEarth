@@ -19,18 +19,13 @@ namespace MiddleEarth.Infrastructure
     public static class SerilogExtension
     {
         public static IServiceCollection AddSerilogApi(this IServiceCollection services, IConfiguration configuration, string name)
-        {
-            var credentials = new NoAuthCredentials("http://loki:3100"); // Address to local or remote Loki server
-
-
+        {            
             Serilog.ILogger logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Debug)
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .Enrich.WithCorrelationId()
                 .Enrich.WithProperty("Application", name)
-                .Filter.ByExcluding(Matching.FromSource("Microsoft.AspNetCore.StaticFiles"))
-                .Filter.ByExcluding(z => z.MessageTemplate.Text.Contains("Business error"))
                 .WriteTo.LokiHttp(new NoAuthCredentials("http://loki:3100"))
                 .WriteTo.Console(new RenderedCompactJsonFormatter())
                 .CreateLogger();
@@ -82,7 +77,7 @@ namespace MiddleEarth.Infrastructure
         #region Debug
 
         public void DebugWithMessageTemplate(string messageTemplate, params object[] extraParams)
-            => _logger.Debug(messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
+            => _logger.Debug(messageTemplate, extraParams);
 
         /// <summary>
         /// Write a log in debug level
@@ -94,7 +89,7 @@ namespace MiddleEarth.Infrastructure
         {
             if (callerName != null)
                 message = $"{callerName}:{message}";
-            _logger.Debug(_messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, new { Params = JsonConvert.SerializeObject(extraParams) });
+            _logger.Debug(_messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, extraParams);
         }
 
         #endregion
@@ -102,7 +97,7 @@ namespace MiddleEarth.Infrastructure
         #region Information
 
         public void InformationWithMessageTemplate(string messageTemplate, params object[] extraParams)
-            => _logger.Information(messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
+            => _logger.Information(messageTemplate, extraParams);
 
         /// <summary>
         /// Write a log in information level
@@ -122,7 +117,7 @@ namespace MiddleEarth.Infrastructure
         #region Warning
 
         public void WarningWithMessageTemplate(string messageTemplate, Exception exception = null, params object[] extraParams)
-            => _logger.Warning(exception, messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
+            => _logger.Warning(exception, messageTemplate, extraParams);
 
         /// <summary>
         /// Write a log in warning level
@@ -152,7 +147,7 @@ namespace MiddleEarth.Infrastructure
         #region Error
 
         public void ErrorWithMessageTemplate(string messageTemplate, Exception exception = null, params object[] extraParams)
-            => _logger.Error(exception, messageTemplate, new { Params = JsonConvert.SerializeObject(extraParams) });
+            => _logger.Error(exception, messageTemplate, extraParams);
 
         /// <summary>
         /// Write a log in error level
@@ -174,12 +169,7 @@ namespace MiddleEarth.Infrastructure
         {
             if (callerName != null)
                 message = $"{callerName}:{message}";
-            _logger.Error(exception, _messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, new { Params = JsonConvert.SerializeObject(extraParams) });
-        }
-
-        public void Write(Serilog.Events.LogEvent logEvent)
-        {
-            throw new NotImplementedException();
+            _logger.Error(exception, _messageTemplate, _logEvent.TraceId, _logEvent.ParentSpanId, _logEvent.SpanId,  _logEvent.RequestId,message, extraParams);
         }
 
         #endregion

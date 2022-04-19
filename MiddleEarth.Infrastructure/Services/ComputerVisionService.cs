@@ -43,7 +43,7 @@ public class ComputerVisionService
             return description.Text;
         }
 
-        _logger.Warning("Any Description fonded from computerVision", extraParams: new { Params = JsonConvert.SerializeObject(result) });
+        _logger.Warning("Any Description fonded from computerVision");
         return null;
     }
 }
